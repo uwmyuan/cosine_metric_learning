@@ -11,12 +11,12 @@ import nets.deep_sort.network_definition as net
 
 class sdd_dataset(object):
 
-    def __init__(self, dataset_dir, annotation_file_name,video_file_name,num_validation_y=0.1, seed=1234):
+    def __init__(self, dataset_dir, annotation_file_name, video_file_name, num_validation_y=0.1, seed=1234):
         self._dataset_dir = dataset_dir
         self._num_validation_y = num_validation_y
         self._seed = seed
-        self._annotation_file_name=annotation_file_name
-        self._video_file_name=video_file_name
+        self._annotation_file_name = annotation_file_name
+        self._video_file_name = video_file_name
 
     def read_train(self):
 
@@ -66,14 +66,14 @@ def main():
         "--video_file_name", help="Path to Stanford drone dataset video file.",
         default="/videos/nexus/video0/video.mov")
     args = arg_parser.parse_args()
-    dataset = sdd_dataset(args.dataset_dir,args.annotation_file_name,args.video_file_name,num_validation_y=0.1, seed=1234)
+    dataset = sdd_dataset(args.dataset_dir, args.annotation_file_name, args.video_file_name)
 
     if args.mode == "train":
         train_x, train_y, _ = dataset.read_train()
         print("Train set size: %d images, %d identities" % (
             len(train_x), len(np.unique(train_y))))
         network_factory = net.create_network_factory(
-            is_training=True, num_classes=sdd.calculate_max_label(dataset._dataset_dir+dataset._annotation_file_name) + 1,
+            is_training=True, num_classes=sdd.calculate_max_label(self._dataset_dir + self._annotation_file_name) + 1,
             add_logits=args.loss_mode == "cosine-softmax")
         train_kwargs = train_app.to_train_kwargs(args)
         train_app.train_loop(
@@ -97,7 +97,7 @@ def main():
         gallery_filenames, _, query_filenames, _, _ = dataset.read_test()
 
         network_factory = net.create_network_factory(
-            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir+self._annotation_file_name) + 1,
+            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir + self._annotation_file_name) + 1,
             add_logits=False, reuse=None)
         gallery_features = train_app.encode(
             net.preprocess, network_factory, args.restore_path,
@@ -107,7 +107,7 @@ def main():
             {"features": gallery_features})
 
         network_factory = net.create_network_factory(
-            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir+self._annotation_file_name) + 1,
+            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir + self._annotation_file_name) + 1,
             add_logits=False, reuse=True)
         query_features = train_app.encode(
             net.preprocess, network_factory, args.restore_path,
@@ -117,7 +117,7 @@ def main():
             {"features": query_features})
     elif args.mode == "finalize":
         network_factory = net.create_network_factory(
-            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir+self._annotation_file_name) + 1,
+            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir + self._annotation_file_name) + 1,
             add_logits=False, reuse=None)
         train_app.finalize(
             functools.partial(net.preprocess, input_is_bgr=True),
@@ -126,7 +126,7 @@ def main():
             output_filename="./sdd.ckpt")
     elif args.mode == "freeze":
         network_factory = net.create_network_factory(
-            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir+self._annotation_file_name) + 1,
+            is_training=False, num_classes=sdd.calculate_max_label(self._dataset_dir + self._annotation_file_name) + 1,
             add_logits=False, reuse=None)
         train_app.freeze(
             functools.partial(net.preprocess, input_is_bgr=True),
